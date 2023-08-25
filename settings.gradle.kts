@@ -1,4 +1,4 @@
-rootProject.name = "kotlin-paper-template"
+rootProject.name = "ReWorldMarket"
 
 pluginManagement {
     repositories {

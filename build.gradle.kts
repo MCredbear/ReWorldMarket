@@ -1,11 +1,22 @@
+import io.gitlab.arturbosch.detekt.Detekt
+import io.gitlab.arturbosch.detekt.DetektCreateBaselineTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
+val exposedVersion: String by project
+val hikariVersion: String by project
+val mysqlDriverVersion: String by project
+val h2DriverVersion: String by project
+val kotlinVersion: String by project
+val kotlinSerializationVersion: String by project
+val detectKtVersion: String by project
+
 plugins {
-    kotlin("jvm") version "1.7.10"
+    kotlin("jvm") version "1.9.0"
     java
     id("com.github.johnrengelman.shadow") version "7.1.2"
     id("io.papermc.paperweight.userdev") version "1.4.0"
-
+    kotlin("plugin.serialization") version "1.9.0"
+    id("io.gitlab.arturbosch.detekt") version "1.23.1"
 }
 
 group = "dev.krysztal"
@@ -22,18 +33,36 @@ repositories {
     mavenLocal()
     maven("https://repo.papermc.io/repository/maven-public/")
     maven("https://oss.sonatype.org/content/groups/public/")
+    maven("https://repo1.maven.org/maven2/")
 }
 
-
 dependencies {
-
+    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.23.1")
     paperDevBundle(paperVersion)
 
     testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
-
     testImplementation(kotlin("test"))
-    implementation(kotlin("stdlib"))
-    shadow(kotlin("stdlib"))
+    compileOnly(kotlin("stdlib"))
+    compileOnly("org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinSerializationVersion")
+    implementation("org.bstats:bstats-bukkit:3.0.2")
+    shadow("org.bstats:bstats-bukkit:3.0.2")
+
+    // Database
+    compileOnly("org.jetbrains.exposed:exposed-core:$exposedVersion")
+    compileOnly("org.jetbrains.exposed:exposed-dao:$exposedVersion")
+    compileOnly("org.jetbrains.exposed:exposed-jdbc:$exposedVersion")
+
+    compileOnly("org.jetbrains.exposed:exposed-kotlin-datetime:$exposedVersion")
+
+    compileOnly("com.zaxxer:HikariCP:$hikariVersion")
+
+    compileOnly("mysql:mysql-connector-java:$mysqlDriverVersion")
+    compileOnly("com.h2database:h2:$h2DriverVersion")
+}
+
+tasks.shadowJar {
+    relocate("org.bstats", "dev.krysztal.relocate.bstats")
+    minimize()
 }
 
 tasks.test {
@@ -41,7 +70,7 @@ tasks.test {
 }
 
 tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "1.8"
+    kotlinOptions.jvmTarget = "17"
 }
 
 tasks.test {
@@ -54,13 +83,42 @@ tasks.withType<KotlinCompile> {
 
 tasks.processResources {
     inputs.property("version", version)
-    filesMatching("plugin.yml") { expand(mutableMapOf("version" to version)) }
+    filesMatching("plugin.yml") {
+        expand(
+            mutableMapOf(
+                "version" to version,
+                "exposedVersion" to exposedVersion,
+                "hikariVersion" to hikariVersion,
+                "mysqlDriverVersion" to mysqlDriverVersion,
+                "h2DriverVersion" to h2DriverVersion,
+                "kotlinVersion" to kotlinVersion,
+                "kotlinSerializationVersion" to kotlinSerializationVersion
+            )
+        )
+    }
+}
+
+detekt {
+    buildUponDefaultConfig = true
+    allRules = false
+    autoCorrect = true
+}
+
+tasks.withType<Detekt>().configureEach {
+    reports {
+        md.required.set(true)
+    }
+    jvmTarget = "17"
+}
+
+tasks.withType<DetektCreateBaselineTask>().configureEach {
+    jvmTarget = "17"
 }
 
 compileKotlin.kotlinOptions {
-    jvmTarget = "1.8"
+    jvmTarget = "17"
 }
 
 compileTestKotlin.kotlinOptions {
-    jvmTarget = "1.8"
+    jvmTarget = "17"
 }
