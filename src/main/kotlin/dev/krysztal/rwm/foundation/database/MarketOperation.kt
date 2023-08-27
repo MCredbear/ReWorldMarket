@@ -2,12 +2,12 @@
 
 package dev.krysztal.rwm.foundation.database
 
-import dev.krysztal.rwm.foundation.market.MarketItem
+import dev.krysztal.rwm.foundation.market.LimitedItem
 import org.bukkit.entity.Player
 import java.util.*
 
 object MarketOperation {
-    val itemEntries: MutableList<MarketItem> = mutableListOf()
+    val itemEntries: MutableList<LimitedItem> = mutableListOf()
 
     fun refreshItemEntries() {
     }
@@ -21,14 +21,16 @@ object MarketOperation {
     fun buyGoods(
         player: Player,
         uuid: UUID,
-        count: Int = 1
+        price: Int
     ) {
     }
 
     fun putGoods(
         player: Player,
         uuid: UUID,
-        count: Int = 1,
+        price: Int
     ) {
+        val item = player.inventory.itemInMainHand
+
     }
 }
