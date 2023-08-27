@@ -93,8 +93,18 @@ object Database {
 
     fun getPlayerBalance(player: Player): Long {
         return transaction {
-            val account = AccountTable.select(AccountTable.userUUID eq player.uniqueId.toString())
+            val account =
+                AccountTable.select((AccountTable.userUUID eq player.uniqueId.toString()) or (AccountTable.userName eq player.name))
             return@transaction account.first()[AccountTable.balance]
+        }
+    }
+
+    fun setPlayerBalance(player: Player, balance: Long) {
+        transaction {
+            AccountTable.update({ (AccountTable.userUUID eq player.uniqueId.toString()) or (AccountTable.userName eq player.name) })
+            { account ->
+                account[AccountTable.balance] = balance
+            }
         }
     }
 
