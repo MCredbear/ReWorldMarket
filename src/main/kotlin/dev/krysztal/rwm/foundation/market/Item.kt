@@ -5,6 +5,6 @@ import kotlinx.serialization.Serializable
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 
-// UUID: The UUID of this item when it is added into market
+// UUID: 这个物品第一次被加入市场时获得的UUID
 @Serializable
 data class Item(val uuid: String, @Contextual val itemStack: ItemStack, val price: Long, val player: Player?)
