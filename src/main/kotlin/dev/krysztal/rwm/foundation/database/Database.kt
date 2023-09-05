@@ -40,8 +40,23 @@ object ItemTable : Table() {
     val price: Column<Long> = long("Price")
     val userUUID: Column<String> = varchar("UserUUID", 36)
     val userName: Column<String> = varchar("UserName", 16)
+
+    override val primaryKey: PrimaryKey = PrimaryKey(itemUUID)
 }
 
+/*
+Table:
+Material    Saleable    MinPrice    MaxPrice    RecommendPrice
+ */
+object LimitedItemTable : Table() {
+    val material: Column<String> = text("Material")
+    val saleable: Column<Boolean> = bool("Saleable")
+    val minPrice: Column<Long> = long("MinPrice")
+    val maxPrice: Column<Long> = long("MaxPrice")
+    val recommendPrice: Column<Long> = long("RecommendPrice")
+
+    override val primaryKey: PrimaryKey = PrimaryKey(material)
+}
 
 object Database {
     private val dataSource: DataSource
@@ -88,6 +103,7 @@ object Database {
                 }
             }
             if (!ItemTable.exists()) SchemaUtils.create(ItemTable)
+            if (!LimitedItemTable.exists()) SchemaUtils.create(LimitedItemTable)
         }
     }
 

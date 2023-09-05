@@ -5,6 +5,7 @@ import com.zaxxer.hikari.HikariDataSource
 import dev.krysztal.rwm.ReWorldMarketMain
 import dev.krysztal.rwm.foundation.database.AccountTable
 import dev.krysztal.rwm.foundation.database.ItemTable
+import dev.krysztal.rwm.foundation.database.LimitedItemTable
 import dev.krysztal.rwm.foundation.market.Item
 import org.bukkit.Bukkit
 import org.bukkit.Material
@@ -71,6 +72,7 @@ class DatabaseTest {
                 SchemaUtils.create(AccountTable)
             }
             if (!ItemTable.exists()) SchemaUtils.create(ItemTable)
+            if (!LimitedItemTable.exists()) SchemaUtils.create(LimitedItemTable)
         }
     }
 

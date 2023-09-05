@@ -14,10 +14,3 @@ storage:
   username: "remarket"
   password: ""
   prefix: "remarket_"
-
-limited_item:
-  - AIR:
-      saleable: false
-      minPrice: 114
-      maxPrice: 514
-      recommendPrice: 1919
