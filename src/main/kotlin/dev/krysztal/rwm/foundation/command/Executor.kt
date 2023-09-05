@@ -26,6 +26,7 @@ class ReWorldMarketCommandExecutor : CommandExecutor {
         }
     }
 
+    // 打开帮助
     private fun help(sender: CommandSender): Boolean {
         sender.sendMessage(
             """
@@ -37,6 +38,7 @@ class ReWorldMarketCommandExecutor : CommandExecutor {
         return true
     }
 
+    // 出售手上的物品
     private fun sale(sender: CommandSender, args: Array<out String>?): Boolean {
         val price = args?.get(1)?.toLongOrNull()
         return if (price == null) {
@@ -60,8 +62,9 @@ class ReWorldMarketCommandExecutor : CommandExecutor {
     }
 
 
+    // 打开购买面板
     private fun buy(sender: CommandSender): Boolean {
-        TODO("设计交易面板")
+        TODO("设计购买面板")
         return true
     }
 
