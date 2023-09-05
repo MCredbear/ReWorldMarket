@@ -49,6 +49,9 @@ dependencies {
     implementation("org.bstats:bstats-bukkit:3.0.2")
     shadow("org.bstats:bstats-bukkit:3.0.2")
 
+    implementation("me.lucko:commodore:2.2")
+    shadow("me.lucko:commodore:2.2")
+
     // Database
     compileOnly("org.jetbrains.exposed:exposed-core:$exposedVersion")
     compileOnly("org.jetbrains.exposed:exposed-dao:$exposedVersion")
@@ -85,16 +88,17 @@ dependencies {
 }
 
 tasks.shadowJar {
-    relocate("org.bstats", "dev.krysztal.relocate.bstats")
+    dependencies {
+        exclude(dependency("com.mojang:brigadier"))
+    }
+
+    relocate("org.bstats", "dev.krysztal.rwm.relocate.org.bstats")
+    relocate("me.lucko", "dev.krysztal.rwm.relocate.me.lucko")
     minimize()
 }
 
-tasks.test {
-    useJUnitPlatform()
-}
-
-tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "17"
+tasks.build {
+    dependsOn("shadowJar")
 }
 
 tasks.test {
