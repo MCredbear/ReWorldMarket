@@ -1,6 +1,5 @@
 package dev.krysztal.rwm.foundation.market
 
-import dev.krysztal.rwm.ReWorldMarketMain
 import dev.krysztal.rwm.foundation.database.Database
 import org.bukkit.Material
 import org.bukkit.entity.Player
@@ -9,41 +8,27 @@ import java.util.*
 
 object Market {
     private val itemEntry: MutableList<Item> = mutableListOf()
-    private val limitedItemEntry: MutableList<LimitedItem> = mutableListOf()
+    private val limitationEntry: MutableList<Limitation> = mutableListOf()
 
     init {
         itemEntry.addAll(Database.getItemEntry())
-        val limitedItemSections = ReWorldMarketMain.INSTANCE.config.getConfigurationSection("limited_item")
-        if (limitedItemSections != null) {
-            for (limitedItemKey in limitedItemSections.getKeys(false)) {
-                val limitedItemSection = limitedItemSections.getConfigurationSection(limitedItemKey)
-                limitedItemEntry.add(
-                    LimitedItem(
-                        Material.valueOf(limitedItemKey),
-                        limitedItemSection!!.get("saleable") as? Boolean,
-                        limitedItemSection.get("minPrice") as? Long,
-                        limitedItemSection.get("maxPrice") as? Long,
-                        limitedItemSection.get("recommendPrice") as? Long
-                    )
-                )
-            }
-        }
+
     }
 
     fun sale(player: Player, itemStack: ItemStack, price: Long): Boolean {
-        val limitedItem = limitedItemEntry.find { limitedItem ->
-            limitedItem.material == itemStack.type
+        val limitation = limitationEntry.find { limitation ->
+            limitation.material == itemStack.type
         }
-        if (limitedItem != null) {
-            if (limitedItem.saleable == true) {
+        if (limitation != null) {
+            if (limitation.saleable == true) {
                 player.sendMessage("该物品不可出售")
                 return false
             }
-            if (limitedItem.minPrice?.let { it > (price / itemStack.amount) } == true) {
+            if (limitation.minPrice?.let { it > (price / itemStack.amount) } == true) {
                 player.sendMessage("你的出价太低了")
                 return false
             }
-            if (limitedItem.maxPrice?.let { it < (price / itemStack.amount) } == true) {
+            if (limitation.maxPrice?.let { it < (price / itemStack.amount) } == true) {
                 player.sendMessage("你的出价太高了")
                 return false
             }
@@ -75,6 +60,68 @@ object Market {
                 itemEntry.remove(item)
             }
         }
+    }
 
+    // 添加限制
+    fun addLimitation(player: Player, limitation: Limitation): Boolean {
+        return if (Database.findLimitation(limitation.material) != null) {
+            player.sendMessage("该物品已存在限制")
+            false
+        } else {
+            Database.addLimitation(limitation)
+            player.sendMessage("添加成功")
+            true
+        }
+    }
+
+    // 查找限制
+    fun findLimitation(player: Player, material: Material) {
+        val limitation = Database.findLimitation(material)
+        if (limitation != null) {
+            player.sendMessage(
+                """
+                [${material.toString()}]
+                是否可以出售：
+                最低单价：${limitation.minPrice}
+                最高单价：${limitation.maxPrice}
+                推荐单价：${limitation.recommendPrice}
+                """.trimIndent().format()
+            )
+        } else {
+            player.sendMessage("没有找到该物品的限制")
+        }
+    }
+
+    // 修改限制
+    fun setLimitation(player: Player, limitation: Limitation): Boolean {
+        return if (Database.findLimitation(limitation.material) == null) {
+            Database.addLimitation(limitation)
+            player.sendMessage("该限制不存在，现在已添加")
+            true
+        } else {
+            Database.setLimitation(limitation)
+            player.sendMessage("修改成功")
+            true
+        }
+    }
+
+    // 移除限制
+    fun removeLimitation(player: Player, material: Material): Boolean {
+        val limitation = Database.findLimitation(material)
+        return if (limitation != null) {
+            Database.removeLimitation(material)
+            player.sendMessage("移除成功")
+            true
+        } else {
+            player.sendMessage("移除失败，没有该限制")
+            false
+        }
+    }
+
+    // 移除所有限制
+    fun removeAllLimitation(player: Player): Boolean {
+        Database.removeAllLimitation()
+        player.sendMessage("移除成功")
+        return true
     }
 }

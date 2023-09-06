@@ -5,6 +5,7 @@ import com.zaxxer.hikari.HikariDataSource
 import dev.krysztal.rwm.ReWorldMarketMain
 import dev.krysztal.rwm.extender.getStringConfig
 import dev.krysztal.rwm.foundation.market.Item
+import dev.krysztal.rwm.foundation.market.Limitation
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.entity.Player
@@ -48,12 +49,12 @@ object ItemTable : Table() {
 Table:
 Material    Saleable    MinPrice    MaxPrice    RecommendPrice
  */
-object LimitedItemTable : Table() {
+object LimitationTable : Table() {
     val material: Column<String> = text("Material")
-    val saleable: Column<Boolean> = bool("Saleable")
-    val minPrice: Column<Long> = long("MinPrice")
-    val maxPrice: Column<Long> = long("MaxPrice")
-    val recommendPrice: Column<Long> = long("RecommendPrice")
+    val saleable: Column<Boolean?> = bool("Saleable").nullable()
+    val minPrice: Column<Long?> = long("MinPrice").nullable()
+    val maxPrice: Column<Long?> = long("MaxPrice").nullable()
+    val recommendPrice: Column<Long?> = long("RecommendPrice").nullable()
 
     override val primaryKey: PrimaryKey = PrimaryKey(material)
 }
@@ -103,7 +104,7 @@ object Database {
                 }
             }
             if (!ItemTable.exists()) SchemaUtils.create(ItemTable)
-            if (!LimitedItemTable.exists()) SchemaUtils.create(LimitedItemTable)
+            if (!LimitationTable.exists()) SchemaUtils.create(LimitationTable)
         }
     }
 
@@ -144,7 +145,7 @@ object Database {
     fun addItem(item: Item) {
         transaction {
             ItemTable.insert { row ->
-                row[itemUUID] = item.uuid.toString()
+                row[itemUUID] = item.uuid
                 row[material] = item.itemStack.type.name
                 row[amount] = item.itemStack.amount
                 row[price] = item.price
@@ -158,6 +159,59 @@ object Database {
     fun removeItem(item: Item) {
         transaction {
             ItemTable.deleteWhere { itemUUID eq item.uuid }
+        }
+    }
+
+    // 添加限制
+    fun addLimitation(limitation: Limitation) {
+        transaction {
+            LimitationTable.insert { row ->
+                row[material] = limitation.material.toString()
+                row[saleable] = limitation.saleable
+                row[minPrice] = limitation.minPrice
+                row[maxPrice] = limitation.maxPrice
+                row[recommendPrice] = limitation.recommendPrice
+            }
+        }
+    }
+
+    // 查找限制
+    fun findLimitation(material: Material): Limitation? {
+        return transaction {
+            val limitation = LimitationTable.select(LimitationTable.material eq material.toString())
+            return@transaction if (limitation.empty()) null else Limitation(
+                Material.valueOf(limitation.first()[LimitationTable.material]),
+                limitation.first()[LimitationTable.saleable],
+                limitation.first()[LimitationTable.minPrice],
+                limitation.first()[LimitationTable.maxPrice],
+                limitation.first()[LimitationTable.recommendPrice]
+            )
+        }
+    }
+
+    // 修改限制
+    fun setLimitation(limitation: Limitation) {
+        transaction {
+            LimitationTable.update({ LimitationTable.material eq limitation.material.toString() }) { preLimitation ->
+                preLimitation[saleable] = limitation.saleable
+                preLimitation[minPrice] = limitation.minPrice
+                preLimitation[maxPrice] = limitation.maxPrice
+                preLimitation[recommendPrice] = limitation.recommendPrice
+            }
+        }
+    }
+
+    // 移除限制
+    fun removeLimitation(material: Material) {
+        transaction {
+            LimitationTable.deleteWhere { LimitationTable.material eq material.toString() }
+        }
+    }
+
+    // 移除所有限制
+    fun removeAllLimitation() {
+        transaction {
+            LimitationTable.deleteAll()
         }
     }
 }

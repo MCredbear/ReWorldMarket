@@ -2,12 +2,12 @@
 
 package dev.krysztal.rwm.foundation.database
 
-import dev.krysztal.rwm.foundation.market.LimitedItem
+import dev.krysztal.rwm.foundation.market.Limitation
 import org.bukkit.entity.Player
 import java.util.*
 
 object MarketOperation {
-    val itemEntries: MutableList<LimitedItem> = mutableListOf()
+    val itemEntries: MutableList<Limitation> = mutableListOf()
 
     fun refreshItemEntries() {
     }

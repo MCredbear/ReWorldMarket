@@ -3,9 +3,9 @@ package dev.krysztal.rwm.foundation.market
 import kotlinx.serialization.Serializable
 import org.bukkit.Material
 
-// 需要控制价格和是否可以出售的物品
+// 对商品价格和是否可以出售的限制
 @Serializable
-data class LimitedItem(
+data class Limitation(
     val material: Material,
     val saleable: Boolean?,
     val minPrice: Long?,
