@@ -7,12 +7,12 @@ import org.bukkit.inventory.ItemStack
 import java.util.*
 
 object Market {
-    private val itemEntry: MutableList<Item> = mutableListOf()
-    private val limitationEntry: MutableList<Limitation> = mutableListOf()
+    val itemEntry: MutableList<Item> = mutableListOf()
+    val limitationEntry: MutableList<Limitation> = mutableListOf()
 
     init {
         itemEntry.addAll(Database.getItemEntry())
-
+        limitationEntry.addAll(Database.getLimitationEntry())
     }
 
     fun sale(player: Player, itemStack: ItemStack, price: Long): Boolean {
@@ -50,6 +50,7 @@ object Market {
                 buyer.sendMessage("你的物品栏已满")
             } else {
                 buyer.inventory.addItem(item.itemStack)
+                buyer.sendMessage("购买成功")
                 buyerBalance -= item.price
                 Database.setPlayerBalance(buyer, buyerBalance)
                 if (saler != null) {
@@ -80,7 +81,7 @@ object Market {
         if (limitation != null) {
             player.sendMessage(
                 """
-                [${material.toString()}]
+                [$material]
                 是否可以出售：
                 最低单价：${limitation.minPrice}
                 最高单价：${limitation.maxPrice}

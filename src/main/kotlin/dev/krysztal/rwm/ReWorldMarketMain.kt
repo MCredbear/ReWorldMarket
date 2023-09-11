@@ -26,7 +26,6 @@ class ReWorldMarketMain() : JavaPlugin() {
             val commandExecutor = ReWorldMarketCommandExecutor()
             command.setExecutor(commandExecutor)
         }
-
     }
 
     override fun onDisable() {

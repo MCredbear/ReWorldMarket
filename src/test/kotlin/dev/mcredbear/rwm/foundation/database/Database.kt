@@ -48,9 +48,9 @@ class DatabaseTest {
         val url = when (databaseType) {
             "mysql", "mariadb", "postgresql" ->
                 "jdbc:$databaseType://" +
-                        "${storageHost}:" +
-                        "${storagePort}/" +
-                        storageDatabase
+                    "$storageHost:" +
+                    "$storagePort/" +
+                    storageDatabase
 
             else ->
                 "jdbc:h2:${Path(ReWorldMarketMain.INSTANCE.dataFolder.absolutePath, "h2")}"
@@ -77,7 +77,7 @@ class DatabaseTest {
     }
 
     @Test
-    fun test(): Unit {
+    fun test() {
         addItem(item)
         println(getItemEntry())
         removeItem(item)
@@ -97,8 +97,7 @@ class DatabaseTest {
     // 设置玩家余额
     private fun setPlayerBalance(uuid: String, name: String, balance: Long) {
         transaction {
-            AccountTable.update({ (AccountTable.userUUID eq uuid) or (AccountTable.userName eq name) })
-            { account ->
+            AccountTable.update({ (AccountTable.userUUID eq uuid) or (AccountTable.userName eq name) }) { account ->
                 account[AccountTable.balance] = balance
             }
         }

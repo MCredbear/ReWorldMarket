@@ -1,5 +1,6 @@
 package dev.krysztal.rwm.foundation.command
 
+import dev.krysztal.rwm.foundation.gui.MarketMenu
 import dev.krysztal.rwm.foundation.market.Market
 import org.bukkit.Bukkit
 import org.bukkit.Material
@@ -61,11 +62,9 @@ class ReWorldMarketCommandExecutor : CommandExecutor {
         }
     }
 
-
     // 打开购买面板
     private fun buy(sender: CommandSender): Boolean {
-        TODO("设计购买面板")
+        MarketMenu.open(sender as Player)
         return true
     }
-
 }

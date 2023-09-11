@@ -24,7 +24,7 @@ UserUUID    UserName    Balance
  */
 object AccountTable : Table() {
     val userUUID: Column<String> = varchar("UserUUID", 36)
-    val userName: Column<String> = varchar("UserName", 16)
+    val userName: Column<String?> = varchar("UserName", 16).nullable()
     val balance: Column<Long> = long("Balance")
 
     override val primaryKey: PrimaryKey = PrimaryKey(userUUID)
@@ -74,9 +74,9 @@ object Database {
         val url = when (databaseType) {
             "mysql", "mariadb", "postgresql" ->
                 "jdbc:$databaseType://" +
-                        "${"storage.host".getStringConfig()}:" +
-                        "${"storage.port".getStringConfig()}/" +
-                        "${"storage.database".getStringConfig()}"
+                    "${"storage.host".getStringConfig()}:" +
+                    "${"storage.port".getStringConfig()}/" +
+                    "${"storage.database".getStringConfig()}"
 
             else ->
                 "jdbc:h2:${Path(ReWorldMarketMain.INSTANCE.dataFolder.absolutePath, "h2")}"
@@ -99,7 +99,7 @@ object Database {
                 val players = Bukkit.getOfflinePlayers().asList()
                 AccountTable.batchInsert(players) { player ->
                     this[AccountTable.userUUID] = player.uniqueId.toString()
-                    this[AccountTable.userName] = player.name!!
+                    this[AccountTable.userName] = player.name
                     this[AccountTable.balance] = 0
                 }
             }
@@ -108,12 +108,13 @@ object Database {
         }
     }
 
-
     // 获取玩家余额
     fun getPlayerBalance(player: Player): Long {
         return transaction {
             val account =
-                AccountTable.select((AccountTable.userUUID eq player.uniqueId.toString()) or (AccountTable.userName eq player.name))
+                AccountTable.select(
+                    (AccountTable.userUUID eq player.uniqueId.toString()) or (AccountTable.userName eq player.name)
+                )
             return@transaction account.first()[AccountTable.balance]
         }
     }
@@ -121,8 +122,9 @@ object Database {
     // 设置玩家余额
     fun setPlayerBalance(player: Player, balance: Long) {
         transaction {
-            AccountTable.update({ (AccountTable.userUUID eq player.uniqueId.toString()) or (AccountTable.userName eq player.name) })
-            { account ->
+            AccountTable.update(
+                { (AccountTable.userUUID eq player.uniqueId.toString()) or (AccountTable.userName eq player.name) }
+            ) { account ->
                 account[AccountTable.balance] = balance
             }
         }
@@ -162,6 +164,21 @@ object Database {
         }
     }
 
+    // 获取所有限制的清单
+    fun getLimitationEntry(): List<Limitation> {
+        return transaction {
+            return@transaction LimitationTable.selectAll().map { row ->
+                Limitation(
+                    material = Material.valueOf(row[LimitationTable.material]),
+                    saleable = row[LimitationTable.saleable],
+                    minPrice = row[LimitationTable.minPrice],
+                    maxPrice = row[LimitationTable.maxPrice],
+                    recommendPrice = row[LimitationTable.recommendPrice]
+                )
+            }
+        }
+    }
+
     // 添加限制
     fun addLimitation(limitation: Limitation) {
         transaction {
@@ -179,13 +196,17 @@ object Database {
     fun findLimitation(material: Material): Limitation? {
         return transaction {
             val limitation = LimitationTable.select(LimitationTable.material eq material.toString())
-            return@transaction if (limitation.empty()) null else Limitation(
-                Material.valueOf(limitation.first()[LimitationTable.material]),
-                limitation.first()[LimitationTable.saleable],
-                limitation.first()[LimitationTable.minPrice],
-                limitation.first()[LimitationTable.maxPrice],
-                limitation.first()[LimitationTable.recommendPrice]
-            )
+            return@transaction if (limitation.empty()) {
+                null
+            } else {
+                Limitation(
+                    Material.valueOf(limitation.first()[LimitationTable.material]),
+                    limitation.first()[LimitationTable.saleable],
+                    limitation.first()[LimitationTable.minPrice],
+                    limitation.first()[LimitationTable.maxPrice],
+                    limitation.first()[LimitationTable.recommendPrice]
+                )
+            }
         }
     }
 
