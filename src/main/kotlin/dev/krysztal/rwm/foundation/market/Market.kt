@@ -63,6 +63,17 @@ object Market {
         }
     }
 
+    fun listLimitation(player: Player): Boolean {
+        val limitationEntry = Database.getLimitationEntry()
+        val message = limitationEntry.joinToString("\n") { limitation ->
+            return@joinToString """
+                $limitation.material: ${if (limitation.saleable != false) "可收" else "不可售"} 最低: ${limitation.minPrice ?: "无"} 最高: ${limitation.maxPrice ?: "无"} 推荐: ${limitation.recommendPrice ?: "无"}
+            """.trimIndent()
+        }
+        player.sendMessage(message)
+        return true
+    }
+
     // 添加限制
     fun addLimitation(player: Player, limitation: Limitation): Boolean {
         return if (Database.findLimitation(limitation.material) != null) {
@@ -76,20 +87,22 @@ object Market {
     }
 
     // 查找限制
-    fun findLimitation(player: Player, material: Material) {
+    fun findLimitation(player: Player, material: Material): Boolean {
         val limitation = Database.findLimitation(material)
-        if (limitation != null) {
+        return if (limitation != null) {
             player.sendMessage(
                 """
-                [$material]
-                是否可以出售：
-                最低单价：${limitation.minPrice}
-                最高单价：${limitation.maxPrice}
-                推荐单价：${limitation.recommendPrice}
-                """.trimIndent().format()
+                    [$material]
+                    是否可以出售：
+                    最低单价：${limitation.minPrice}
+                    最高单价：${limitation.maxPrice}
+                    推荐单价：${limitation.recommendPrice}
+                    """.trimIndent().format()
             )
+            true
         } else {
             player.sendMessage("没有找到该物品的限制")
+            false
         }
     }
 

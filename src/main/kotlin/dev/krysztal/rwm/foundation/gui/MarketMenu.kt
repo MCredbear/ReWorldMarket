@@ -3,7 +3,6 @@ package dev.krysztal.rwm.foundation.gui
 import dev.krysztal.rwm.foundation.market.Item
 import dev.krysztal.rwm.foundation.market.Market
 import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.TextComponent
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.entity.Player
@@ -24,6 +23,17 @@ object MarketMenu : Listener {
 
         var itemEntry: MutableList<Item> = mutableListOf()
 
+        internal val divider = ItemStack(Material.GLASS_PANE)
+        internal val preButton = ItemStack(Material.WHITE_STAINED_GLASS_PANE)
+        internal val sorter = ItemStack(Material.OAK_FENCE)
+        internal val nextButton = ItemStack(Material.WHITE_STAINED_GLASS_PANE)
+
+        init {
+            divider.itemMeta = divider.itemMeta.apply { displayName(Component.text("")) }
+            preButton.itemMeta = preButton.itemMeta.apply { displayName(Component.text("上一页")) }
+            sorter.itemMeta = sorter.itemMeta.apply { displayName(Component.text("排序")) }
+            nextButton.itemMeta = nextButton.itemMeta.apply { displayName(Component.text("上一页")) }
+        }
         override fun getInventory(): Inventory {
             return inventory
         }
@@ -42,12 +52,8 @@ object MarketMenu : Listener {
                 inventory.setItem(index, itemStack)
             }
 
-            val divider = ItemStack(Material.GLASS_PANE)
-            divider.itemMeta = divider.itemMeta.apply { displayName(Component.text("")) }
 
             if (offset > 0) {
-                val preButton = ItemStack(Material.WHITE_STAINED_GLASS_PANE)
-                preButton.itemMeta = preButton.itemMeta.apply { displayName(Component.text("上一页")) }
                 inventory.addItem(preButton)
             } else {
                 inventory.addItem(divider)
@@ -57,8 +63,6 @@ object MarketMenu : Listener {
                 inventory.addItem(divider)
             }
 
-            val sorter = ItemStack(Material.OAK_FENCE)
-            sorter.itemMeta = sorter.itemMeta.apply { displayName(Component.text("排序")) }
             inventory.addItem(sorter)
 
             for (i in 0..3) {
@@ -66,8 +70,6 @@ object MarketMenu : Listener {
             }
 
             if (offset < (Market.itemEntry.size / (4 * 9))) {
-                val nextButton = ItemStack(Material.WHITE_STAINED_GLASS_PANE)
-                nextButton.itemMeta = nextButton.itemMeta.apply { displayName(Component.text("上一页")) }
                 inventory.addItem(nextButton)
             } else {
                 inventory.addItem(divider)
@@ -91,22 +93,22 @@ object MarketMenu : Listener {
 
             val itemStack = event.currentItem ?: return
             val holder = event.inventory.holder as MenuHolder
-            when ((itemStack.itemMeta.displayName() as TextComponent).content()) {
-                "上一页" -> {
+            when (itemStack) {
+                holder.preButton -> {
                     holder.offset -= 1
                     holder.show()
                 }
 
-                "下一页" -> {
+                holder.nextButton -> {
                     holder.offset += 1
                     holder.show()
                 }
 
-                "排序" -> {
+                holder.sorter -> {
                     TODO("完成排序")
                 }
 
-                "" -> {}
+                holder.divider -> {}
                 else -> {
                     val player = event.whoClicked as Player
                     val index = event.inventory.first(itemStack)
