@@ -89,7 +89,6 @@ class ReWorldMarketCommandExecutor : CommandExecutor {
 
     // 子命令格式: [材质] {saleable=[yes/no]} {minPrice=[价格]} {maxPrice=[价格]} {recommendPrice=[价格]}
     private fun addLimitation(sender: CommandSender, args: Array<out String>?): Boolean {
-
         val subArgs = args?.sliceArray(2 until args.size)
         val materialArg = subArgs?.getOrNull(0) ?: run {
             sender.sendMessage("参数错误")
@@ -161,7 +160,6 @@ class ReWorldMarketCommandExecutor : CommandExecutor {
     }
 
     private fun setLimitation(sender: CommandSender, args: Array<out String>?): Boolean {
-
         val subArgs = args?.sliceArray(2 until args.size)
         val materialArg = subArgs?.getOrNull(0) ?: run {
             sender.sendMessage("参数错误")

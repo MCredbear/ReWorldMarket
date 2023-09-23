@@ -19,21 +19,183 @@ object MarketMenu : Listener {
 
         var offset: Int = 0
 
+        enum class SortType {
+            ASCENDING_ORDER_BY_TIME,
+            DESCENDING_ORDER_BY_TIME,
+            ASCENDING_ORDER_BY_UNIT_PRICE,
+            DESCENDING_ORDER_BY_UNIT_PRICE,
+            ASCENDING_ORDER_BY_TOTAL_PRICE,
+            DESCENDING_ORDER_BY_TOTAL_PRICE
+        }
+
+        lateinit var sortType: SortType
+
         private lateinit var inventory: Inventory
 
-        var itemEntry: MutableList<Item> = mutableListOf()
+        var itemEntry: List<Item> = listOf()
 
         internal val divider = ItemStack(Material.GLASS_PANE)
         internal val preButton = ItemStack(Material.WHITE_STAINED_GLASS_PANE)
-        internal val sorter = ItemStack(Material.OAK_FENCE)
+        internal val sortByTimeButton = ItemStack(Material.OAK_FENCE)
+        internal val sortByUnitPriceButton = ItemStack(Material.OAK_FENCE)
+        internal val sortByTotalPriceButton = ItemStack(Material.OAK_FENCE)
         internal val nextButton = ItemStack(Material.WHITE_STAINED_GLASS_PANE)
+
+        // 排序商品（获取当前页面的新商品列表）
+        fun sort(sortType: SortType) {
+            this.sortType = sortType
+            when (sortType) {
+                SortType.DESCENDING_ORDER_BY_TIME -> {
+                    itemEntry = Market.itemEntry.reversed().slice((4 * 9) * offset..(4 * 9) * (offset + 1)).toList()
+                    sortByTimeButton.lore(
+                        mutableListOf(
+                            Component.text("当前：按时间降序") as Component,
+                            Component.text("点击切换成按时间升序") as Component
+                        )
+                    )
+                    sortByUnitPriceButton.lore(
+                        mutableListOf(
+                            Component.text("当前：按时间降序") as Component,
+                            Component.text("点击切换成按单价升序") as Component
+                        )
+                    )
+                    sortByTotalPriceButton.lore(
+                        mutableListOf(
+                            Component.text("当前：按时间降序") as Component,
+                            Component.text("点击切换成按总价升序") as Component
+                        )
+                    )
+                }
+
+                SortType.ASCENDING_ORDER_BY_TIME -> {
+                    itemEntry = Market.itemEntry.slice((4 * 9) * offset..(4 * 9) * (offset + 1)).toList()
+                    sortByTimeButton.lore(
+                        mutableListOf(
+                            Component.text("当前：按时间升序") as Component,
+                            Component.text("点击切换成按时间降序") as Component
+                        )
+                    )
+                    sortByUnitPriceButton.lore(
+                        mutableListOf(
+                            Component.text("当前：按时间升序") as Component,
+                            Component.text("点击切换成按单价升序") as Component
+                        )
+                    )
+                    sortByTotalPriceButton.lore(
+                        mutableListOf(
+                            Component.text("当前：按时间升序") as Component,
+                            Component.text("点击切换成按总价升序") as Component
+                        )
+                    )
+                }
+
+                SortType.ASCENDING_ORDER_BY_UNIT_PRICE -> {
+                    itemEntry = Market.itemEntry.sortedBy { it.price.toDouble() / it.itemStack.amount }
+                        .slice((4 * 9) * offset..(4 * 9) * (offset + 1)).toList()
+                    sortByTimeButton.lore(
+                        mutableListOf(
+                            Component.text("当前：按单价升序") as Component,
+                            Component.text("点击切换成按时间降序") as Component
+                        )
+                    )
+                    sortByUnitPriceButton.lore(
+                        mutableListOf(
+                            Component.text("当前：按单价升序") as Component,
+                            Component.text("点击切换成按单价降序") as Component
+                        )
+                    )
+                    sortByTotalPriceButton.lore(
+                        mutableListOf(
+                            Component.text("当前：按单价升序") as Component,
+                            Component.text("点击切换成按总价升序") as Component
+                        )
+                    )
+                }
+
+                SortType.DESCENDING_ORDER_BY_UNIT_PRICE -> {
+                    itemEntry = Market.itemEntry.sortedByDescending { it.price.toDouble() / it.itemStack.amount }
+                        .slice((4 * 9) * offset..(4 * 9) * (offset + 1)).toList()
+                    sortByTimeButton.lore(
+                        mutableListOf(
+                            Component.text("当前：按单价降序") as Component,
+                            Component.text("点击切换成按时间降序") as Component
+                        )
+                    )
+                    sortByUnitPriceButton.lore(
+                        mutableListOf(
+                            Component.text("当前：按单价降序") as Component,
+                            Component.text("点击切换成按单价升序") as Component
+                        )
+                    )
+                    sortByTotalPriceButton.lore(
+                        mutableListOf(
+                            Component.text("当前：按单价降序") as Component,
+                            Component.text("点击切换成按总价升序") as Component
+                        )
+                    )
+                }
+
+                SortType.ASCENDING_ORDER_BY_TOTAL_PRICE -> {
+                    itemEntry =
+                        Market.itemEntry.sortedBy { it.price }.slice((4 * 9) * offset..(4 * 9) * (offset + 1)).toList()
+                    sortByTimeButton.lore(
+                        mutableListOf(
+                            Component.text("当前：按总价升序") as Component,
+                            Component.text("点击切换成按时间降序") as Component
+                        )
+                    )
+                    sortByUnitPriceButton.lore(
+                        mutableListOf(
+                            Component.text("当前：按总价升序") as Component,
+                            Component.text("点击切换成按单价升序") as Component
+                        )
+                    )
+                    sortByTotalPriceButton.lore(
+                        mutableListOf(
+                            Component.text("当前：按总价升序") as Component,
+                            Component.text("点击切换成按总价降序") as Component
+                        )
+                    )
+                }
+
+                SortType.DESCENDING_ORDER_BY_TOTAL_PRICE -> {
+                    itemEntry =
+                        Market.itemEntry.sortedByDescending { it.price }.slice((4 * 9) * offset..(4 * 9) * (offset + 1))
+                            .toList()
+                    sortByTimeButton.lore(
+                        mutableListOf(
+                            Component.text("当前：按总价降序") as Component,
+                            Component.text("点击切换成按时间降序") as Component
+                        )
+                    )
+                    sortByUnitPriceButton.lore(
+                        mutableListOf(
+                            Component.text("当前：按总价降序") as Component,
+                            Component.text("点击切换成按单价升序") as Component
+                        )
+                    )
+                    sortByTotalPriceButton.lore(
+                        mutableListOf(
+                            Component.text("当前：按总价降序") as Component,
+                            Component.text("点击切换成按总价升序") as Component
+                        )
+                    )
+                }
+            }
+        }
 
         init {
             divider.itemMeta = divider.itemMeta.apply { displayName(Component.text("")) }
             preButton.itemMeta = preButton.itemMeta.apply { displayName(Component.text("上一页")) }
-            sorter.itemMeta = sorter.itemMeta.apply { displayName(Component.text("排序")) }
             nextButton.itemMeta = nextButton.itemMeta.apply { displayName(Component.text("上一页")) }
+            sortByTimeButton.itemMeta = sortByTimeButton.itemMeta.apply { displayName(Component.text("按时间排序")) }
+            sortByUnitPriceButton.itemMeta =
+                sortByUnitPriceButton.itemMeta.apply { displayName(Component.text("按单价排序")) }
+            sortByTotalPriceButton.itemMeta =
+                sortByTotalPriceButton.itemMeta.apply { displayName(Component.text("按总价排序")) }
+            sort(SortType.DESCENDING_ORDER_BY_TIME)
         }
+
         override fun getInventory(): Inventory {
             return inventory
         }
@@ -43,36 +205,36 @@ object MarketMenu : Listener {
                 Component.text("交易菜单-当前页面：${offset + 1}/${(Market.itemEntry.size / (4 * 9)) + 1}")
             inventory = Bukkit.createInventory(this, 5 * 9, title)
 
-            itemEntry = Market.itemEntry.subList((4 * 9) * offset, (4 * 9) * (offset + 1))
-            for (index in 0..4 * 9) {
+            sort(SortType.DESCENDING_ORDER_BY_TIME)
+            for (index in 0..itemEntry.size) {
                 val itemStack = itemEntry[index].itemStack.clone()
                 val priceText = Component.text("价格：${itemEntry[index].price}")
-                val lore: MutableList<Component> = ((itemStack.lore() ?: mutableListOf()) + priceText).toMutableList()
+                val lore: List<Component> = ((itemStack.lore() ?: mutableListOf()) + priceText).toList()
                 itemStack.lore(lore)
                 inventory.setItem(index, itemStack)
             }
 
 
             if (offset > 0) {
-                inventory.addItem(preButton)
+                inventory.setItem(4 * 9, preButton)
             } else {
-                inventory.addItem(divider)
+                inventory.setItem(4 * 9, divider)
             }
 
-            for (i in 0..3) {
-                inventory.addItem(divider)
-            }
+            inventory.setItem(4 * 9 + 1, divider)
+            inventory.setItem(4 * 9 + 2, divider)
 
-            inventory.addItem(sorter)
+            inventory.setItem(4 * 9 + 4, sortByTimeButton)
+            inventory.setItem(4 * 9 + 5, sortByUnitPriceButton)
+            inventory.setItem(4 * 9 + 6, sortByTotalPriceButton)
 
-            for (i in 0..3) {
-                inventory.addItem(divider)
-            }
+            inventory.setItem(4 * 9 + 7, divider)
+            inventory.setItem(4 * 9 + 8, divider)
 
             if (offset < (Market.itemEntry.size / (4 * 9))) {
-                inventory.addItem(nextButton)
+                inventory.setItem(4 * 9 + 9, nextButton)
             } else {
-                inventory.addItem(divider)
+                inventory.setItem(4 * 9 + 9, divider)
             }
 
             player.openInventory(inventory)
@@ -82,7 +244,6 @@ object MarketMenu : Listener {
 
     fun open(player: Player) {
         val menuHolder = MenuHolder(player)
-        menuHolder.itemEntry = Market.itemEntry.subList(0, 4 * 9)
         menuHolder.show()
     }
 
@@ -104,8 +265,28 @@ object MarketMenu : Listener {
                     holder.show()
                 }
 
-                holder.sorter -> {
-                    TODO("完成排序")
+                holder.sortByTimeButton -> {
+                    when (holder.sortType) {
+                        MenuHolder.SortType.DESCENDING_ORDER_BY_TIME -> holder.sort(MenuHolder.SortType.ASCENDING_ORDER_BY_TIME)
+                        MenuHolder.SortType.ASCENDING_ORDER_BY_TIME -> holder.sort(MenuHolder.SortType.DESCENDING_ORDER_BY_TIME)
+                        else -> holder.sort(MenuHolder.SortType.DESCENDING_ORDER_BY_TIME)
+                    }
+                }
+
+                holder.sortByUnitPriceButton -> {
+                    when (holder.sortType) {
+                        MenuHolder.SortType.DESCENDING_ORDER_BY_UNIT_PRICE -> holder.sort(MenuHolder.SortType.ASCENDING_ORDER_BY_UNIT_PRICE)
+                        MenuHolder.SortType.ASCENDING_ORDER_BY_UNIT_PRICE -> holder.sort(MenuHolder.SortType.DESCENDING_ORDER_BY_UNIT_PRICE)
+                        else -> holder.sort(MenuHolder.SortType.ASCENDING_ORDER_BY_UNIT_PRICE)
+                    }
+                }
+
+                holder.sortByTotalPriceButton -> {
+                    when (holder.sortType) {
+                        MenuHolder.SortType.DESCENDING_ORDER_BY_TOTAL_PRICE -> holder.sort(MenuHolder.SortType.ASCENDING_ORDER_BY_TOTAL_PRICE)
+                        MenuHolder.SortType.ASCENDING_ORDER_BY_TOTAL_PRICE -> holder.sort(MenuHolder.SortType.DESCENDING_ORDER_BY_TOTAL_PRICE)
+                        else -> holder.sort(MenuHolder.SortType.ASCENDING_ORDER_BY_TIME)
+                    }
                 }
 
                 holder.divider -> {}
